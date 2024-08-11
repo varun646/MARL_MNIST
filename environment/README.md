@@ -3,7 +3,7 @@
 ## Initialization
 - Random MNIST base image
 - Defaults to 8 agents with 4x4 view of image
-- 4 actions per image
+- 4 actions per agent
 - Reward based on predicted handwritten number vs ground truth
 
 ## Actions
