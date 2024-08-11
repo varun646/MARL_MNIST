@@ -15,7 +15,9 @@ class MarlMNIST(gym.Env):
 
     def _get_random_mnist(self):
         # TODO: check why transform still returns tensor
-        mnist = datasets.MNIST(root="data", download=True, transform=lambda x: np.array(x))
+        mnist = datasets.MNIST(
+            root="data", download=True, transform=lambda x: np.array(x)
+        )
         sampler = RandomSampler(data_source=mnist, num_samples=1, replacement=True)
         dataloader = DataLoader(dataset=mnist, sampler=sampler, batch_size=1)
         random_img, ground_truth = next(iter(dataloader))
@@ -48,11 +50,13 @@ class MarlMNIST(gym.Env):
         agent_x = agent_location[0]
         agent_y = agent_location[1]
 
-        partial_agent_view = self.base_image[agent_x:agent_x + self.agent_obs_size,
-                             agent_y:agent_y + self.agent_obs_size]
+        partial_agent_view = self.base_image[
+            agent_x : agent_x + self.agent_obs_size,
+            agent_y : agent_y + self.agent_obs_size,
+        ]
 
         agent_view = np.zeros(shape=shape(self.base_image), dtype=np.uint8)
-        agent_view[agent_y:agent_y + self.agent_obs_size] = partial_agent_view
+        agent_view[agent_y : agent_y + self.agent_obs_size] = partial_agent_view
 
         return agent_view
 
@@ -93,7 +97,7 @@ class MarlMNIST(gym.Env):
                     shape=(MNIST_IMAGE_SIZE, MNIST_IMAGE_SIZE),
                     dtype=np.uint8,
                 ),
-                "agent_locations": spaces.Dict(agent_locations_dict)
+                "agent_locations": spaces.Dict(agent_locations_dict),
             }
         )
 
@@ -152,10 +156,7 @@ class MarlMNIST(gym.Env):
 
         # An episode is done iff the cv model has correctly predicted the base image
         observation = self._get_obs()
-        terminated = (
-                self.vision_model.predict(self.observed_image)
-                == self.ground_truth
-        )
+        terminated = self.vision_model.predict(self.observed_image) == self.ground_truth
 
         reward = 1 if terminated else 0  # Binary sparse rewards
 
