@@ -14,22 +14,35 @@ class MarlMNIST(gym.Env):
         # TODO: have return current image reconstruction, agent locations, and (maybe) ground truth
         raise NotImplemented
 
+    def _compute_new_composite(self):
+        # TODO: compute the new composite image using agent locations. Update in place in self
+        raise NotImplemented
+
     def __init__(self, num_agents=8, agent_obs_size=4) -> None:
         MNIST_IMAGE_SIZE = 28
 
         self.num_agents = num_agents
+        self.agent_obs_size = agent_obs_size
         self.base_image, self.ground_truth = self._get_random_mnist()
 
-        # Observations are dictionaries with the aggregate agent image and the target number
-        # Each location is encoded as an element of {0, ..., `size`}^2, i.e. MultiDiscrete([size, size]).
+        # Observations are dictionaries with the aggregate observed image and the agent locations
+        # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
+        # the top left corner of the agent's observation, i.e. MultiDiscrete([size- agent_obs_size, size- agent_obs_size]).
         self.observation_space = spaces.Dict(
             {
+                # TODO: check if this high should be 0. Maybe we want an all black image initially as opposed to random
                 "observed_image": spaces.Box(
-                    0, MNIST_IMAGE_SIZE - 1, shape=(agent_obs_size,), dtype=int
+                    low=0,
+                    high=255,
+                    shape=(MNIST_IMAGE_SIZE - 1, MNIST_IMAGE_SIZE - 1),
+                    dtype=int,
                 ),
-                "target": spaces.Box(
-                    0, MNIST_IMAGE_SIZE - 1, shape=(agent_obs_size,), dtype=int
-                ),
+                "agent_locations": [
+                    spaces.Box(
+                        0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=int
+                    )
+                    for i in range(self.num_agents)
+                ],
             }
         )
 
