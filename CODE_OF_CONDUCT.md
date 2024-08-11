@@ -1,4 +1,4 @@
-# copier-ProjectScaffolding Open Source Code of Conduct
+# MARL_MNIST Open Source Code of Conduct
 
 ## Principles
 These principles guide our data, product, and process decisions, architecture, and approach.
