@@ -1,5 +1,3 @@
-from torchvision.datasets import MNIST
-from torch.utils.data import RandomSampler
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -10,9 +8,7 @@ class MarlMNIST(gym.Env):
 
     def _get_random_mnist(self):
         # TODO: have return a spaces.Box object initialized with MNIST pixel values and a ground truth value
-        random_sample, ground_truth = RandomSampler(data_source=MNIST, num_samples=1)
-
-        return random_sample, ground_truth
+        raise NotImplemented
 
     def _get_info(self):
         # TODO: return info about the state (potentially the percentage of the image that has been reconstructed)
@@ -22,19 +18,7 @@ class MarlMNIST(gym.Env):
         # TODO: have return current image reconstruction, agent locations, and (maybe) ground truth
         raise NotImplemented
 
-    def _get_agent_view(self, idx):
-        # TODO: Use base image, agent location, agent window size to get the agent view
-
-        agent_location = self._agent_locations[idx]
-        agent_x = agent_location[0]
-        agent_y = agent_location[1]
-
-        masked_image = self._get_obs()["observed_image"]
-        raise NotImplemented
-
-    def _update_composite_view(self):
-        for i, agent_loc in enumerate(self._agent_locations):
-            agent_view = self._get_agent_view(i)
+    def _compute_new_composite(self):
         # TODO: compute the new composite image using agent locations. Update in place in self
         raise NotImplemented
 
@@ -44,8 +28,6 @@ class MarlMNIST(gym.Env):
         self.num_agents = num_agents
         self.agent_obs_size = agent_obs_size
         self.base_image, self.ground_truth = self._get_random_mnist()
-        self._agent_locations = []
-        self.vision_model = None  # TODO: initialize to cv model
 
         # Observations are dictionaries with the aggregate observed image and the agent locations
         # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
@@ -59,7 +41,6 @@ class MarlMNIST(gym.Env):
                     shape=(MNIST_IMAGE_SIZE - 1, MNIST_IMAGE_SIZE - 1),
                     dtype=int,
                 ),
-                # TODO: check if this is the proper way of creating multiple
                 "agent_locations": [
                     spaces.Box(
                         0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=int
@@ -85,9 +66,6 @@ class MarlMNIST(gym.Env):
         }
 
     def reset(self, seed=None, options=None):
-        # NOTE: implication here is that reset is always called since this is where self._agaent_locations is initialized
-        # it may be clearer for the logic to initialize agent locations should be replicated in the __init__ function as well
-        # although not necessary since according to the gymnasium documentation, reset() is always called before step()
         super().reset(seed=seed)
 
         # randomize agent locations (overlap okay?)
@@ -104,7 +82,6 @@ class MarlMNIST(gym.Env):
         self._agent_locations = agent_locations
 
         # randomize base image
-        self.base_image, self.ground_truth = self._get_random_mnist()
 
         # return observations and info
 
@@ -113,38 +90,5 @@ class MarlMNIST(gym.Env):
     def step(self, actions):
         assert len(actions) == self.num_agents
 
-        # update agent locations
-        for i, action in enumerate(actions):
-            agent_direction = self._action_to_direction(action)
-
-            # We use `np.clip` to make sure we don't leave the grid
-            self._agent_locations[i] = np.clip(
-                self._agent_location + agent_direction, 0, self.size - 1
-            )
-
-            # collect observations, update composite image
-            # agent_view = self._get_agent_view(self._agent_locations[i])
-
-        # update composite image based on agent locations
-        self._update_composite_view()
-
-        # An episode is done iff the cv model has correctly predicted the base image
-        observation = self._get_obs()
-        terminated = (
-            self.vision_model.predict(observation["observed_image"])
-            == self.ground_truth
-        )
-
-        reward = 1 if terminated else 0  # Binary sparse rewards
-
-        info = self._get_info()
-
-        return observation, reward, terminated, False, info
-
-        # return observation, reward, terminated, truncated, info
-        raise NotImplemented
-
-    def render(self):
-        # TODO: display base image, dots at agent locations
-
+        # return observation, reward, terminated, False, info
         raise NotImplemented
