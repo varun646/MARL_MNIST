@@ -35,6 +35,10 @@ class MarlMNIST(gym.Env):
 
         return num_non_zero / (self.env_size * self.env_size)
 
+    def _get_info(self):
+        # TODO: return info about the state (potentially the percentage of the image that has been reconstructed)
+        raise NotImplemented
+
     def _get_obs(self):
         return self.observed_image, self._agent_locations
 
