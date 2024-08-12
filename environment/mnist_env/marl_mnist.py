@@ -10,6 +10,10 @@ class MarlMNIST(gym.Env):
         # TODO: have return a spaces.Box object initialized with MNIST pixel values and a ground truth value
         raise NotImplemented
 
+    def _get_info(self):
+        # TODO: return info about the state (potentially the percentage of the image that has been reconstructed)
+        raise NotImplemented
+
     def _get_obs(self):
         # TODO: have return current image reconstruction, agent locations, and (maybe) ground truth
         raise NotImplemented
@@ -62,8 +66,29 @@ class MarlMNIST(gym.Env):
         }
 
     def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+
+        # randomize agent locations (overlap okay?)
+
+        # Choose the agent's location uniformly at random
+        agent_locations = []
+
+        for i in range(self.num_agents):
+            # TODO: check self.size
+            agent_locations.append(
+                self.np_random.integers(0, self.size, size=2, dtype=int)
+            )
+
+        self._agent_locations = agent_locations
+
+        # randomize base image
+
+        # return observations and info
+
         raise NotImplemented
 
     def step(self, actions):
         assert len(actions) == self.num_agents
+
+        # return observation, reward, terminated, False, info
         raise NotImplemented
