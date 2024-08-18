@@ -121,6 +121,8 @@ class MarlMNIST(gym.Env):
         }
 
     def reset(self, seed=None, options=None):
+        # NOTE: implication here is that reset is always called since this is where self._agaent_locations is initialized
+        # it may need to be that the logic to initialize agent locations should be replicated in the __init__ function as well
         super().reset(seed=seed)
 
         # randomize agent locations (overlap okay?)
