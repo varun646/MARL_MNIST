@@ -5,6 +5,13 @@ from torch.utils.data import Dataset
 
 
 class MaskedMNIST(Dataset):
+    """Dataset for training CNN - note that this dataset should be different than what's used in the environment
+    since this will contain both masked and full MNIST images
+
+    Args:
+        Dataset (torch Dataset): torch Dataset class to inherit from
+    """
+
     def __init__(self, mask_size, num_masks, transform=None):
         # TODO: apply masks to MNIST dataset
         self._mask_size = mask_size
