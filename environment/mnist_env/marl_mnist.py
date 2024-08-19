@@ -41,6 +41,7 @@ class MarlMNIST(gym.Env):
         self.agent_obs_size = agent_obs_size
         self.base_image, self.ground_truth = self._get_random_mnist()
         self._agent_locations = []
+        self.vision_model = None  # TODO: initialize to cv model
 
         # Observations are dictionaries with the aggregate observed image and the agent locations
         # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
@@ -116,10 +117,23 @@ class MarlMNIST(gym.Env):
             )
 
             # collect observations, update composite image
-            agent_view = self._get_agent_view(self._agent_locations[i])
+            # agent_view = self._get_agent_view(self._agent_locations[i])
 
         # update composite image based on agent locations
         self._update_composite_view()
 
-        # return observation, reward, terminated, False, info
+        # An episode is done iff the agent has reached the target
+        observation = self._get_obs()
+        terminated = (
+            self.vision_model.predict(observation["observed_image"])
+            == self.ground_truth
+        )
+
+        reward = 1 if terminated else 0  # Binary sparse rewards
+
+        info = self._get_info()
+
+        return observation, reward, terminated, False, info
+
+        # return observation, reward, terminated, truncated, info
         raise NotImplemented
