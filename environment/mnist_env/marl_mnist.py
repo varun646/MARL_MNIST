@@ -122,7 +122,8 @@ class MarlMNIST(gym.Env):
 
     def reset(self, seed=None, options=None):
         # NOTE: implication here is that reset is always called since this is where self._agaent_locations is initialized
-        # it may need to be that the logic to initialize agent locations should be replicated in the __init__ function as well
+        # it may be clearer for the logic to initialize agent locations should be replicated in the __init__ function as well
+        # although not necessary since according to the gymnasium documentation, reset() is always called before step()
         super().reset(seed=seed)
 
         # randomize agent locations (overlap okay?)
@@ -170,6 +171,11 @@ class MarlMNIST(gym.Env):
 
         # return observation, reward, terminated, truncated, info
         return observation, reward, terminated, False, info
+
+    def render(self):
+        # TODO: display base image, dots at agent locations
+
+        raise NotImplemented
 
     def render(self):
         # TODO: display base image, dots at agent locations
