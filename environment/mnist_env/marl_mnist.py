@@ -1,3 +1,5 @@
+from numpy.ma.core import shape
+from torch import AnyType
 from torchvision.datasets import MNIST
 from torch.utils.data import RandomSampler
 import gymnasium as gym
@@ -15,58 +17,71 @@ class MarlMNIST(gym.Env):
         return random_sample, ground_truth
 
     def _get_info(self):
-        # TODO: return info about the state (potentially the percentage of the image that has been reconstructed)
-        raise NotImplemented
+        """
+        Return percentage of base image that has been reconstructed
+
+        :return: float : percentage uncovered
+        """
+        num_non_zero = np.count_nonzero(self.observed_image)
+
+        return num_non_zero / (self.env_size * self.env_size)
 
     def _get_obs(self):
-        # TODO: have return current image reconstruction, agent locations, and (maybe) ground truth
         return self.observed_image, self._agent_locations
 
     def _get_agent_view(self, idx):
-        # TODO: Use base image, agent location, agent window size to get the agent view
+        """
+        Get numpy array representing only view of agent
+
+        :param idx: agent index
+        :return: np.ndarray of shape (MNIST_IMAGE_SIZE, MNIST_IMAGE_SIZE), with agent view populated
+        """
 
         agent_location = self._agent_locations[idx]
         agent_x = agent_location[0]
         agent_y = agent_location[1]
 
-        masked_image = self._get_obs()["observed_image"]
-        raise NotImplemented
+        partial_agent_view = self.base_image[agent_x:agent_x + self.agent_obs_size,
+                             agent_y:agent_y + self.agent_obs_size]
+
+        agent_view = np.zeros(shape=shape(self.base_image), dtype=np.uint8)
+        agent_view[agent_y:agent_y + self.agent_obs_size] = partial_agent_view
+
+        return agent_view
 
     def _update_composite_view(self):
-        # TODO: test
-        new_composite = self._get_obs["observed_image"]
+        new_composite = self.observed_image  # current composite
         for i, agent_loc in enumerate(self._agent_locations):
-            agent_view = self._get_agent_view(i)
+            agent_view = self._get_agent_view(i)  # TODO: implement this
             new_composite = np.where(new_composite != 0, new_composite, agent_view)
 
         self.observed_image = new_composite
 
     def __init__(self, num_agents=8, agent_obs_size=4) -> None:
-        MNIST_IMAGE_SIZE = 28
+        MNIST_IMAGE_SIZE: int = 28
 
-        self.num_agents = num_agents
-        self.agent_obs_size = agent_obs_size
+        self.env_size: int = MNIST_IMAGE_SIZE
+        self.num_agents: int = num_agents
+        self.agent_obs_size: int = agent_obs_size
         self.base_image, self.ground_truth = self._get_random_mnist()
         self._agent_locations = []
         self.vision_model = None  # TODO: initialize to cv model
-        self.observed_image = None
+        self.observed_image = np.zeros(shape=shape(self.base_image), dtype=np.uint8)
 
         # Observations are dictionaries with the aggregate observed image and the agent locations
         # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
         # the top left corner of the agent's observation, i.e. MultiDiscrete([size- agent_obs_size, size- agent_obs_size]).
         self.observation_space = spaces.Dict(
             {
-                # TODO: check if this high should be 0. Maybe we want an all black image initially as opposed to random
                 "observed_image": spaces.Box(
                     low=0,
-                    high=0,
-                    shape=(MNIST_IMAGE_SIZE - 1, MNIST_IMAGE_SIZE - 1),
-                    dtype=int,
+                    high=255,
+                    shape=(MNIST_IMAGE_SIZE, MNIST_IMAGE_SIZE),
+                    dtype=np.uint8,
                 ),
-                # TODO: check if this is the proper way of creating multiple
                 "agent_locations": [
                     spaces.Box(
-                        0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=int
+                        0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=np.uint8
                     )
                     for i in range(self.num_agents)
                 ],
@@ -89,9 +104,6 @@ class MarlMNIST(gym.Env):
         }
 
     def reset(self, seed=None, options=None):
-        # NOTE: implication here is that reset is always called since this is where self._agaent_locations is initialized
-        # it may be clearer for the logic to initialize agent locations should be replicated in the __init__ function as well
-        # although not necessary since according to the gymnasium documentation, reset() is always called before step()
         super().reset(seed=seed)
 
         # randomize agent locations (overlap okay?)
@@ -100,9 +112,8 @@ class MarlMNIST(gym.Env):
         agent_locations = []
 
         for i in range(self.num_agents):
-            # TODO: check self.size
             agent_locations.append(
-                self.np_random.integers(0, self.size, size=2, dtype=int)
+                self.np_random.integers(0, self.env_size, size=2, dtype=np.uint8)
             )
 
         self._agent_locations = agent_locations
@@ -110,20 +121,21 @@ class MarlMNIST(gym.Env):
         # randomize base image
         self.base_image, self.ground_truth = self._get_random_mnist()
 
-        # return observations and info
+        observation = self._get_obs()
+        info = self._get_info()
 
-        raise NotImplemented
+        return observation, info
 
     def step(self, actions):
         assert len(actions) == self.num_agents
 
         # update agent locations
         for i, action in enumerate(actions):
-            agent_direction = self._action_to_direction(action)
+            agent_direction = self._action_to_direction[action]
 
             # We use `np.clip` to make sure we don't leave the grid
             self._agent_locations[i] = np.clip(
-                self._agent_location + agent_direction, 0, self.size - 1
+                self._agent_locations[i] + agent_direction, 0, self.env_size - 1
             )
 
         # update composite image based on agent locations
@@ -132,8 +144,8 @@ class MarlMNIST(gym.Env):
         # An episode is done iff the cv model has correctly predicted the base image
         observation = self._get_obs()
         terminated = (
-            self.vision_model.predict(observation["observed_image"])
-            == self.ground_truth
+                self.vision_model.predict(self.observed_image)
+                == self.ground_truth
         )
 
         reward = 1 if terminated else 0  # Binary sparse rewards
