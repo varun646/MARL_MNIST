@@ -36,8 +36,14 @@ class MarlMNIST(gym.Env):
         return num_non_zero / (self.env_size * self.env_size)
 
     def _get_info(self):
-        # TODO: return info about the state (potentially the percentage of the image that has been reconstructed)
-        raise NotImplemented
+        """
+        Return percentage of base image that has been reconstructed
+
+        :return: float : percentage uncovered
+        """
+        num_non_zero = np.count_nonzero(self.observed_image)
+
+        return num_non_zero / (self.env_size * self.env_size)
 
     def _get_obs(self):
         return self.observed_image, self._agent_locations
@@ -121,9 +127,6 @@ class MarlMNIST(gym.Env):
         }
 
     def reset(self, seed=None, options=None):
-        # NOTE: implication here is that reset is always called since this is where self._agaent_locations is initialized
-        # it may be clearer for the logic to initialize agent locations should be replicated in the __init__ function as well
-        # although not necessary since according to the gymnasium documentation, reset() is always called before step()
         super().reset(seed=seed)
 
         # randomize agent locations (overlap okay?)
