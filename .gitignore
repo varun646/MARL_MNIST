@@ -1,0 +1,8 @@
+.idea/
+tests/__pycache__/test_cnn.cpython-311-pytest-8.2.2.pyc
+tests/__pycache__/test_environment.cpython-311-pytest-8.2.2.pyc
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/MARL_MNIST.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
