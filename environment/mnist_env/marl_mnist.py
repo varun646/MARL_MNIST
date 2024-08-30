@@ -126,9 +126,6 @@ class MarlMNIST(gym.Env):
                 self._agent_location + agent_direction, 0, self.size - 1
             )
 
-            # collect observations, update composite image
-            # agent_view = self._get_agent_view(self._agent_locations[i])
-
         # update composite image based on agent locations
         self._update_composite_view()
 
