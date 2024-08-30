@@ -20,7 +20,7 @@ class MarlMNIST(gym.Env):
 
     def _get_obs(self):
         # TODO: have return current image reconstruction, agent locations, and (maybe) ground truth
-        raise NotImplemented
+        return self.observed_image, self._agent_locations
 
     def _get_agent_view(self, idx):
         # TODO: Use base image, agent location, agent window size to get the agent view
@@ -33,10 +33,13 @@ class MarlMNIST(gym.Env):
         raise NotImplemented
 
     def _update_composite_view(self):
+        # TODO: test
+        new_composite = self._get_obs["observed_image"]
         for i, agent_loc in enumerate(self._agent_locations):
             agent_view = self._get_agent_view(i)
-        # TODO: compute the new composite image using agent locations. Update in place in self
-        raise NotImplemented
+            new_composite = np.where(new_composite != 0, new_composite, agent_view)
+
+        self.observed_image = new_composite
 
     def __init__(self, num_agents=8, agent_obs_size=4) -> None:
         MNIST_IMAGE_SIZE = 28
@@ -46,6 +49,7 @@ class MarlMNIST(gym.Env):
         self.base_image, self.ground_truth = self._get_random_mnist()
         self._agent_locations = []
         self.vision_model = None  # TODO: initialize to cv model
+        self.observed_image = None
 
         # Observations are dictionaries with the aggregate observed image and the agent locations
         # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
@@ -55,7 +59,7 @@ class MarlMNIST(gym.Env):
                 # TODO: check if this high should be 0. Maybe we want an all black image initially as opposed to random
                 "observed_image": spaces.Box(
                     low=0,
-                    high=255,
+                    high=0,
                     shape=(MNIST_IMAGE_SIZE - 1, MNIST_IMAGE_SIZE - 1),
                     dtype=int,
                 ),
@@ -139,10 +143,8 @@ class MarlMNIST(gym.Env):
 
         info = self._get_info()
 
-        return observation, reward, terminated, False, info
-
         # return observation, reward, terminated, truncated, info
-        raise NotImplemented
+        return observation, reward, terminated, False, info
 
     def render(self):
         # TODO: display base image, dots at agent locations
