@@ -1,10 +1,9 @@
 import pytest
-import environment.mnist_env.marl_mnist as marl_mnist_env
 
 
-@pytest.fixture()
-def custom_env():
-    return marl_mnist_env()
+# @pytest.fixture()
+# def custom_env():
+#     return marl_mnist_env()
 
 
 def test_update_composite():
