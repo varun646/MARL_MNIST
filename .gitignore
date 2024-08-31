@@ -6,3 +6,15 @@ tests/__pycache__/test_environment.cpython-311-pytest-8.2.2.pyc
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
+environment/mnist_env/data/MNIST/raw/train-labels-idx1-ubyte.gz
+environment/mnist_env/data/MNIST/raw/train-labels-idx1-ubyte
+environment/mnist_env/data/MNIST/raw/train-images-idx3-ubyte.gz
+environment/mnist_env/data/MNIST/raw/train-images-idx3-ubyte
+environment/mnist_env/data/MNIST/raw/t10k-labels-idx1-ubyte.gz
+environment/mnist_env/data/MNIST/raw/t10k-labels-idx1-ubyte
+environment/mnist_env/data/MNIST/raw/t10k-images-idx3-ubyte.gz
+environment/mnist_env/data/MNIST/raw/t10k-images-idx3-ubyte
+environment/mnist_env/__pycache__/marl_mnist.cpython-311.pyc
+environment/mnist_env/__pycache__/marl_mnist.cpython-311.pyc
+environment/mnist_env/__pycache__/marl_mnist.cpython-311.pyc
+/environment/mnist_env/__pycache__

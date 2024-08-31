@@ -1,7 +1,10 @@
+from random import random
+
 from numpy.ma.core import shape
-from torch import AnyType
-from torchvision.datasets import MNIST
-from torch.utils.data import RandomSampler
+import torchvision.datasets as datasets
+from numpy.random import random_sample
+from torch.utils.data import RandomSampler, DataLoader
+from torchvision.transforms import ToTensor
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
@@ -11,10 +14,14 @@ class MarlMNIST(gym.Env):
     metadata = {"num_agents": 8, "agent_window": 3}
 
     def _get_random_mnist(self):
-        # TODO: have return a spaces.Box object initialized with MNIST pixel values and a ground truth value
-        random_sample, ground_truth = RandomSampler(data_source=MNIST, num_samples=1)
+        # TODO: check why transform still returns tensor
+        mnist = datasets.MNIST(root="data", download=True, transform=lambda x: np.array(x))
+        sampler = RandomSampler(data_source=mnist, num_samples=1, replacement=True)
+        dataloader = DataLoader(dataset=mnist, sampler=sampler, batch_size=1)
+        random_img, ground_truth = next(iter(dataloader))
+        ground_truth = ground_truth.item()
 
-        return random_sample, ground_truth
+        return random_img, ground_truth
 
     def _get_info(self):
         """
@@ -71,6 +78,13 @@ class MarlMNIST(gym.Env):
         # Observations are dictionaries with the aggregate observed image and the agent locations
         # Each location is encoded as an element of {0, ..., `size` - agent_obs_size}^2 corresponding with
         # the top left corner of the agent's observation, i.e. MultiDiscrete([size- agent_obs_size, size- agent_obs_size]).
+        agent_locations_dict = {}
+
+        for i in range(self.num_agents):
+            agent_locations_dict[str(i)] = spaces.Box(
+                0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=np.uint8
+            )
+
         self.observation_space = spaces.Dict(
             {
                 "observed_image": spaces.Box(
@@ -79,12 +93,7 @@ class MarlMNIST(gym.Env):
                     shape=(MNIST_IMAGE_SIZE, MNIST_IMAGE_SIZE),
                     dtype=np.uint8,
                 ),
-                "agent_locations": [
-                    spaces.Box(
-                        0, MNIST_IMAGE_SIZE - agent_obs_size - 1, shape=(2,), dtype=np.uint8
-                    )
-                    for i in range(self.num_agents)
-                ],
+                "agent_locations": spaces.Dict(agent_locations_dict)
             }
         )
 
