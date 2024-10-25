@@ -38,20 +38,18 @@ class Agent:
 
 
 class RandomPolicy:
-    def __init__(self, action_dim):
+    def __init__(self, action_dim: int, num_agents=int):
         self.action_dim = 2
+        self.num_agents = num_agents
 
     def reset(self):
         pass
 
-    def act(self, arg1, arg2):
-        return np.random.uniform(size=self.action_dim) * 2 - 1
+    def act(self):
+        return np.random.binomial(n=self.action_dim, p=0.5, size=self.num_agents)
 
 
 if __name__ == "__main__":
-    import envs
-    import gym
-
     env = MarlMNIST()
     policy = RandomPolicy(2)
     agent = Agent(env)
