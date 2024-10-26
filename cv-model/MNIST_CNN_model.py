@@ -1,9 +1,8 @@
+# basic CNN model architecture taken from PyTorch tutorials (https://github.com/pytorch/examples/blob/main/mnist/main.py)
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
-# TODO: basic CNN taken from blog - need to update for masked MNIST purposes (experiment with transformer cnn - enough data)
-
 
 class MNISTClassifier(torch.nn.Module):
     def __init__(self):
