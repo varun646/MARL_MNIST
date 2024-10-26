@@ -12,7 +12,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # Hyperparameters
 batch_size = 64
 learning_rate = 0.001
-num_epochs = 100
+num_epochs = 5
 
 # MNIST dataset
 transform = transforms.Compose([
@@ -76,6 +76,6 @@ def evaluate():
 
 # Train and evaluate the model
 if __name__ == "__main__":
-    train()
+    train(save=True)
     evaluate()
     writer.close()

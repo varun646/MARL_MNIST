@@ -1,37 +1,32 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 # TODO: basic CNN taken from blog - need to update for masked MNIST purposes (experiment with transformer cnn - enough data)
 
 
 class MNISTClassifier(torch.nn.Module):
-    def __init__(self, num_classes):
-        super().__init__()
-        self.conv_layer1 = nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3)
-        self.conv_layer2 = nn.Conv2d(in_channels=32, out_channels=32, kernel_size=3)
-        self.max_pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.conv_layer3 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3)
-        self.conv_layer4 = nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3)
-        self.max_pool2 = nn.MaxPool2d(kernel_size=2, stride=2)
-
-        self.fc1 = nn.Linear(1600, 128)
-        self.relu1 = nn.ReLU()
-        self.fc2 = nn.Linear(128, num_classes)
+    def __init__(self):
+        super(MNISTClassifier, self).__init__()
+        self.conv1 = nn.Conv2d(1, 32, kernel_size=3, stride=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(9216, 128)
+        self.fc2 = nn.Linear(128, 10)
 
     # Progresses data across layers
     def forward(self, x):
-        out = self.conv_layer1(x)
-        out = self.conv_layer2(out)
-        out = self.max_pool1(out)
-
-        out = self.conv_layer3(out)
-        out = self.conv_layer4(out)
-        out = self.max_pool2(out)
-
-        out = out.reshape(out.size(0), -1)
-
-        out = self.fc1(out)
-        out = self.relu1(out)
-        out = self.fc2(out)
-        return out
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = F.max_pool2d(x, 2)
+        x = self.dropout1(x)
+        x = torch.flatten(x, 1)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.dropout2(x)
+        x = self.fc2(x)
+        output = F.log_softmax(x, dim=1)
+        return output
