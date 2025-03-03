@@ -44,3 +44,13 @@ The project aims to train multiple RL agents to collaboratively identify an MNIS
     ```bash
     pip install -e .
     ```
+
+## Enhancements over Existing Literature
+
+### Implementation of Attention-Based Filtering Module
+Add notion of attention-based filtering to decentralized communication network. This way, instead of treating all messages as equally important, we can focus more on input that provides new insights
+
+### Implementation of Graph Attention Network for Communication Graph
+Replace a fully-connected communication graph with a graph attention network so we can learn to devalue less important/less reliable agents.
+
+**Future Testing of Efficacy:** implement an adversarial/unreliable agent (one that either actively works against the system or provides output at random) and test how the system compares to a system without GAT (NOTE: from a SWE standpoint, we will need to make the communication methods modular - decentralized equally weighted, attention-based filtering, or GAT)
