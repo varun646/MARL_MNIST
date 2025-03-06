@@ -54,3 +54,7 @@ Add notion of attention-based filtering to decentralized communication network. 
 Replace a fully-connected communication graph with a graph attention network so we can learn to devalue less important/less reliable agents.
 
 **Future Testing of Efficacy:** implement an adversarial/unreliable agent (one that either actively works against the system or provides output at random) and test how the system compares to a system without GAT (NOTE: from a SWE standpoint, we will need to make the communication methods modular - decentralized equally weighted, attention-based filtering, or GAT)
+
+
+## TODO:
+- add infra for custom communication graph and have agents share info in distributed manner between steps
