@@ -1,10 +1,10 @@
-# import matplotlib.pyplot as plt
-# import numpy as np
-# import gym
-# import environment.mnist_env
-# import os
-# import logging
-#
+import matplotlib.pyplot as plt
+import numpy as np
+import gym
+import environment.mnist_env
+import os
+import logging
+
 # from utils import config
 # from agent import Agent, RandomPolicy
 # from mpc import MPC

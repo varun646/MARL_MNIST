@@ -3,11 +3,12 @@ import torch
 from environment.mnist_env.marl_mnist import MarlMNIST
 
 
-class Agent:
-    def __init__(self, env):
+class AgentNetwork:
+    def __init__(self, env, agents=[]):
         self.env = env
+        self.agents = agents
 
-    def sample(self, horizon, policy):
+    def sample(self, horizon, policies):
         """
         Sample a rollout from the agent.
 
@@ -15,18 +16,23 @@ class Agent:
           horizon: (int) the length of the rollout
           policy: the policy that the agent will use for actions
         """
+        assert len(self.agents) == len(policies)
+
         rewards = []
         states, actions, reward_sum, done = [self.env.reset()], [], 0, False
 
-        policy.reset()
+        # policy.reset()
         for t in range(horizon):
-            actions.append(policy.act(states[t], t))
-            state, reward, done, info = self.env.step(actions[t])
-            states.append(state)
-            reward_sum += reward
-            rewards.append(reward)
-            if done:
-                break
+            agent_actions = []
+            for i, policy in enumerate(policies):
+                agent_actions.append(policy.act(states[t], t)) # TODO: update for all agents
+                # TODO: UPDATE ALL THE BELOW FOR ALL AGENTS
+                state, reward, done, info = self.env.step(actions[t])
+                states.append(state)
+                reward_sum += reward
+                rewards.append(reward)
+                if done:
+                    break
 
         # print("Rollout length: %d,\tTotal reward: %d,\t Last reward: %d" % (len(actions), reward_sum), reward)
 
