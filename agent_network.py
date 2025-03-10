@@ -4,7 +4,9 @@ from environment.mnist_env.marl_mnist import MarlMNIST
 
 
 class AgentNetwork:
-    def __init__(self, env, agents=[]):
+    def __init__(self, env, agents=None):
+        if agents is None:
+            self.agents = []
         self.env = env
         self.agents = agents
 
