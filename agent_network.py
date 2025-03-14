@@ -1,40 +1,35 @@
 import numpy as np
 import torch
 from environment.mnist_env.marl_mnist import MarlMNIST
+from agent import Agent
 
 
 class AgentNetwork:
     def __init__(self, env, agents=None):
-        if agents is None:
-            self.agents = []
-        self.env = env
         self.agents = agents
 
-    def sample(self, horizon, policies):
-        """
-        Sample a rollout from the agent.
+        if agents is None:
+            self.agents = []
 
-        Arguments:
-          horizon: (int) the length of the rollout
-          policy: the policy that the agent will use for actions
-        """
-        assert len(self.agents) == len(policies)
+        self.env = env
+
+    def sample_for_agent(self, agent_num, horizon, policy):
+        assert agent_num < len(self.agents)
+        assert agent_num > 0
 
         rewards = []
         states, actions, reward_sum, done = [self.env.reset()], [], 0, False
 
-        # policy.reset()
+        agent = self.agents[agent_num]
+        policy.reset()
         for t in range(horizon):
-            agent_actions = []
-            for i, policy in enumerate(policies):
-                agent_actions.append(policy.act(states[t], t)) # TODO: update for all agents
-                # TODO: UPDATE ALL THE BELOW FOR ALL AGENTS
-                state, reward, done, info = self.env.step(actions[t])
-                states.append(state)
-                reward_sum += reward
-                rewards.append(reward)
-                if done:
-                    break
+            actions.append(policy.act(states[t], t))
+            state, reward, done, info = self.env.step(actions[t])
+            states.append(state)
+            reward_sum += reward
+            rewards.append(reward)
+            if done:
+                break
 
         # print("Rollout length: %d,\tTotal reward: %d,\t Last reward: %d" % (len(actions), reward_sum), reward)
 
@@ -45,6 +40,57 @@ class AgentNetwork:
             "rewards": np.array(rewards),
         }
 
+
+    def sample(self, horizon, policies):
+        """
+        Sample a rollout from the agent.
+
+        Arguments:
+          horizon: (int) the length of the rollout
+          policies: the policies that the agent will use for actions
+        """
+        assert len(self.agents) == len(policies)
+
+        rewards = []
+        states, actions, reward_sum, done = [self.env.reset()], [], 0, False
+
+        # policy.reset()
+        # for i in range(len(self.agents)):
+        obs = []
+        ac = []
+        reward_sum = []
+        rewards = []
+
+
+        for t in range(horizon):
+            for i in range(len(self.agents)):
+                agent_sample = self.sample_for_agent(i, horizon=1, policy=policies[i])
+                obs.append(agent_sample["obs"])
+                ac.append(agent_sample["ac"])
+                reward_sum.append(agent_sample["reward_sum"])
+                rewards.append(agent_sample["rewards"])
+
+        return {
+            "obs": np.array(states),
+            "ac": np.array(actions),
+            "reward_sum": reward_sum,
+            "rewards": np.array(rewards),
+        }
+
+
+class RandomPolicyWithMessaging:
+    def __init__(self, action_dim: int, num_agents: int, agent_network: AgentNetwork):
+        self.action_dim = 2
+        self.num_agents = num_agents
+        self.agent_network = agent_network
+
+    def reset(self):
+        pass
+
+    def act(self):
+        # TODO: add logic for communication with neighbors
+        
+        return np.random.binomial(n=self.action_dim, p=0.5, size=self.num_agents)
 
 class RandomPolicy:
     def __init__(self, action_dim: int, num_agents=int):
