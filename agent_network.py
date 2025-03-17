@@ -87,9 +87,16 @@ class RandomPolicyWithMessaging:
     def reset(self):
         pass
 
+    def act_with_messages(self, messages: list[int]):
+        # TODO: include messages in action
+        print(messages)
+        return np.random.binomial(n=self.action_dim, p=0.5, size=self.num_agents)
+
     def act(self):
         # TODO: add logic for communication with neighbors
-        
+        for agent in self.agent_network.agents:
+            agent_action = self.act_with_messages(agent.messages)
+
         return np.random.binomial(n=self.action_dim, p=0.5, size=self.num_agents)
 
 class RandomPolicy:
