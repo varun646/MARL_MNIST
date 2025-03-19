@@ -1,9 +1,9 @@
 import numpy as np
 from communication_graph import CommunicationGraph
+from message_aggregator_interface import MessageAggregatorInterface
 
 class MarlAgent:
-    def __init__(self, env, communication_graph: CommunicationGraph):
-        self.env = env
-        self.communication_graph = communication_graph
+    def __init__(self, message_aggregator: MessageAggregatorInterface):
+        self.message_aggregator = message_aggregator
 
     

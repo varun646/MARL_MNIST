@@ -39,9 +39,9 @@ class Agent:
 
 
 class RandomPolicy:
-    def __init__(self, action_dim: int, num_agents=int):
+    def __init__(self, action_dim: int, num_agents: int):
         self.action_dim = 2
-        self.num_agents = num_agents
+        self.num_agents = 4
 
     def reset(self):
         pass
